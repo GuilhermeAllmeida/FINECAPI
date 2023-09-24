@@ -1,99 +1,81 @@
-from django.shortcuts import render,get_object_or_404,redirect
-from .models import Reserva,Stand
-from .forms import ReservaForm, StandForm
+from django.shortcuts import render,get_object_or_404, redirect
+from reserva.models import Reserva,Stand
+from django.views.generic import ListView,CreateView,DeleteView,DetailView, UpdateView,TemplateView
+from reserva.forms import ReservaForm, StandForm
+from django.urls import reverse_lazy
+from django.contrib.messages import views
 
 #CRUD RESERVA
 
-def reserva_editar(request,id):
-    reserva = get_object_or_404(Reserva,id=id)
-   
-    if request.method == 'POST':
-        form = ReservaForm(request.POST,instance=reserva)
+class index(TemplateView):
+    template_name = "core/index.html"
 
-        if form.is_valid():
-            form.save()
-            return redirect('reserva_listar')
-    else:
-        form = ReservaForm(instance=reserva)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['total_reservas'] = Reserva.objects.count()
+        context['total_stands'] = Stand.objects.count()
+        return context
 
-    return render(request,'reserva/form.html',{'form':form})
- 
+class listReserva(ListView):
+    template_name = 'core/listaReserva.html'
+    model = Reserva
+    context_object_name = 'reserva'
 
-def reserva_remover(request, id):
-    reserva = get_object_or_404(Reserva, id=id)
-    reserva.delete()
-    return redirect('reserva_listar') # procure um url com o nome 'lista_reserva'
+#criar
+class Criar(views.SuccessMessageMixin,CreateView):
 
+    form_class = ReservaForm
+    template_name = 'core/formReserva.html'
+    success_url = reverse_lazy('listar')
+    success_message = "Reserva criada com sucesso!"
 
-def reserva_criar(request):
-    if request.method == 'POST':
-        form = ReservaForm(request.POST)
-        if form.is_valid():
-            form.save()
-            form = ReservaForm()
-    else:
-        form = ReservaForm()
+class Delete(views.SuccessMessageMixin,DeleteView):
+    model = Reserva
+    template_name = 'core/confirm.html'
+    success_url = reverse_lazy("listar")
+    context_object_name= "reserva"
+    success_message = "Reserva deletada com sucesso!"
 
-    return render(request, "reserva/form.html", {'form': form})
+class ReservaUpdateView(views.SuccessMessageMixin,UpdateView):
+  model = Reserva
+  form_class = ReservaForm
+  success_url = reverse_lazy("listar")
+  template_name = "core/formReserva.html"
+  success_message = "Reserva atualizada com sucesso!"
 
+class ReservaDetalhe(DetailView):
+    model = Reserva
+    template_name = "core/detalheReserva.html"
 
-def reserva_listar(request):
-    reservas = Reserva.objects.all()
-    context ={
-        'reservas':reservas
-    }
-    return render(request, "reserva/reserva.html",context)
+#CRUD Stand
 
+class listStand(ListView):
+    template_name = 'core/listaStand.html'
+    model = Stand
+    context_object_name = 'stand'
 
+#criar
+class Criar(views.SuccessMessageMixin,CreateView):
 
-#CRUD CURSO
+    form_class = StandForm
+    template_name = 'core/formStand.html'
+    success_url = reverse_lazy('listar')
+    success_message = "Stand criada com sucesso!"
 
-def stand_editar(request,id):
-    stand = get_object_or_404(Stand,id=id)
-   
-    if request.method == 'POST':
-        form = StandForm(request.POST,instance=stand) #passa o objeto stand para o formulário
+class Delete(views.SuccessMessageMixin,DeleteView):
+    model = Stand
+    template_name = 'core/confirm.html'
+    success_url = reverse_lazy("listar")
+    context_object_name= "stand"
+    success_message = "Stand deletada com sucesso!"
 
-        if form.is_valid():
-            form.save()
-            return redirect('stand_listar')
-    else:
-        form = StandForm(instance=stand)
+class StandUpdateView(views.SuccessMessageMixin,UpdateView):
+  model = Stand
+  form_class = StandForm
+  success_url = reverse_lazy("listar")
+  template_name = "core/formStand.html"
+  success_message = "Stand atualizada com sucesso!"
 
-    return render(request,'stand/form.html',{'form':form})
-
-
-def stand_remover(request, id):
-    stand = get_object_or_404(Stand, id=id)
-    stand.delete()
-    return redirect('stand_listar') # procure um url com o nome 'stand_listar'
-
-
-def stand_criar(request):
-    if request.method == 'POST':
-        form = StandForm(request.POST)
-        if form.is_valid():
-            form.save()
-            form = StandForm()
-    else:
-        form = StandForm()
-
-    return render(request, "stand/form.html", {'form': form})
-
-
-def stand_listar(request):
-    stands = Stand.objects.all()
-    context ={
-        'stands':stands
-    }
-    return render(request, "stand/stand.html",context)
-
-
-def index(request):
-    total_reservas = Reserva.objects.count()
-    total_stands = Stand.objects.count()
-    context = {
-        'total_reservas' : total_reservas,
-        'total_stands' : total_stands,
-    }
-    return render(request, "reserva/index.html",context)
+class StandDetalhe(DetailView):
+    model = Stand
+    template_name = "core/detalheStand.html"

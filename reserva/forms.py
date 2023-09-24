@@ -21,6 +21,6 @@ class StandForm(ModelForm):
         fields = '__all__'
         widgets = {
             'localizacao' : forms.TextInput(attrs={'class': 'form-control' }),
-            #
+        
         }
 
